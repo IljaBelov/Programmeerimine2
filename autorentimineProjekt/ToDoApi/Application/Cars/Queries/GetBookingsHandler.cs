@@ -16,11 +16,12 @@ namespace autorentimineProjekt.ToDoApi.Application.Bookings.Commands
 
         public async Task<Result<List<BookingDto>>> Handle(GetBookingsQuery? query)
         {
+            // ИСПРАВЛЕНО ПОД ТРЕБОВАНИЯ ОТ 22.01:
+            // Вместо return Success(null) теперь жестко выкидываем ошибку
             if (query == null)
             {
-                return Result<List<BookingDto>>.Success(null!);
+                throw new ArgumentNullException(nameof(query));
             }
-            
 
             var activeBookings = await _context.Bookings
                 .Include(b => b.Car)
