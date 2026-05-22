@@ -1,43 +1,30 @@
 using Microsoft.AspNetCore.Mvc;
-using autorentimineProjekt.ToDoApi.Models;
-using autorentimineProjekt.ToDoApi.Data;
 using autorentimineProjekt.ToDoApi.Application.Bookings.Commands;
+using MediatR;
+using System.Threading.Tasks;
 
 [Route("api/[controller]")]
 [ApiController]
 public class BookingsController : ControllerBase
 {
-    [HttpGet]
-    public async Task<IActionResult> GetBookings([FromServices] GetBookingsHandler handler)
+    private readonly IMediator _mediator;
+
+    public BookingsController(IMediator mediator)
     {
-        var result = await handler.Handle(new GetBookingsQuery());
-        return Ok(result.Value);
-    }
-    [HttpPost("start")]
-    public async Task<IActionResult> StartRental([FromServices] CreateBookingHandler handler, [FromBody] CreateBookingCommand command)
-    {
-        var result = await handler.Handle(command);
-        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
+        _mediator = mediator;
     }
 
-    [HttpPost("finish")]
-    public async Task<IActionResult> FinishRental(
-    [FromServices] CancelBookingHandler handler,
-    [FromBody] CancelBookingCommand command)
+    // Универсальный эндпоинт сохранения (Создание бронирования или смена машины внутри существующего)
+    [HttpPost("save")]
+    public async Task<IActionResult> SaveBooking([FromBody] SaveBookingCommand command)
     {
-        var result = await handler.Handle(command);
+        var result = await _mediator.Send(command);
 
-        if (!result.IsSuccess)
+        if (result.HasErrors)
         {
-            return BadRequest(result.Error);
+            return BadRequest(result);
         }
 
-        // Возвращаем Ok, внутри которого будет только итоговая цена
-        return Ok(new
-        {
-            Message = "Поездка завершена",
-            TotalPrice = result.Value,
-            Currency = "EUR"
-        });
+        return Ok(new { Message = "Booking saved successfully" });
     }
 }

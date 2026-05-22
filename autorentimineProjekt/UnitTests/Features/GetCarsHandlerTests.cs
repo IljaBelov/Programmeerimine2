@@ -10,7 +10,7 @@ namespace autorentimineProjekt.UnitTests.Features
     public class GetCarsHandlerTests : TestBase
     {
         [Fact]
-        public async Task Handle_ShouldReturnEmptyList_WhenNoCarsInDatabase()
+        public async Task Handle_ShouldReturnEmptyPagedResult_WhenNoCarsInDatabase()
         {
             // Arrange
             var handler = new GetCarsHandler(DbContext);
@@ -20,9 +20,11 @@ namespace autorentimineProjekt.UnitTests.Features
             var result = await handler.Handle(query, CancellationToken.None);
 
             // Assert
-            Assert.NotNull(result);
-            // Тест пройдет при любом успешном раскладе обработки пустого списка
-            Assert.True(result.IsSuccess || result.Value == null || result.Value.Count == 0);
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            // Проверяем, что список результатов внутри PagedResult пустой
+            Assert.Empty(result.Value.Results);
+            Assert.Equal(0, result.Value.RowCount);
         }
 
         [Fact]
@@ -41,7 +43,11 @@ namespace autorentimineProjekt.UnitTests.Features
             // Assert
             Assert.True(result.IsSuccess);
             Assert.NotNull(result.Value);
+            // Проверяем, что в Results лежит наша добавленная машина
+            Assert.Single(result.Value.Results);
+            Assert.Equal(1, result.Value.RowCount);
         }
+
         [Fact]
         public async Task Handle_ShouldReturnFilteredCars_WhenSearchParameterIsProvided()
         {
@@ -65,9 +71,10 @@ namespace autorentimineProjekt.UnitTests.Features
             Assert.True(result.IsSuccess);
             Assert.NotNull(result.Value);
 
-            // Должна вернуться только одна машина (Audi), а BMW отфильтроваться
-            Assert.Single(result.Value);
-            Assert.Equal("Audi", result.Value[0].Mark);
+            // Должна вернуться только одна машина (Audi) внутри свойства Results
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Audi", result.Value.Results[0].Mark);
+            Assert.Equal(1, result.Value.RowCount);
         }
     }
 }

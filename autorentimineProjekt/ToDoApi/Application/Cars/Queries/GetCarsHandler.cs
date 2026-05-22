@@ -1,8 +1,10 @@
 using autorentimineProjekt.ToDoApi.Application.Common;
 using autorentimineProjekt.ToDoApi.Data;
 using autorentimineProjekt.ToDoApi.Models;
+using autorentimineProjekt.ToDoApi.Application.Common.Paging;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -10,13 +12,15 @@ using System.Threading.Tasks;
 
 namespace autorentimineProjekt.ToDoApi.Application.Cars.Queries
 {
-    // 1. Добавляем параметр поиска в сам запрос (Пункт 2 из задания)
-    public class GetCarsQuery : IRequest<Result<List<Car>>>
+    // Меняем возвращаемый тип с List<Car> на PagedResult<Car>
+    public class GetCarsQuery : IRequest<Result<PagedResult<Car>>>
     {
-        public string? Search { get; set; } // Сюда будет приходить текст для поиска
+        public string? Search { get; set; }
+        public int Page { get; set; } = 1;       // Номер страницы (по умолчанию 1)
+        public int PageSize { get; set; } = 10;  // Количество элементов на странице
     }
 
-    public class GetCarsHandler : IRequestHandler<GetCarsQuery, Result<List<Car>>>
+    public class GetCarsHandler : IRequestHandler<GetCarsQuery, Result<PagedResult<Car>>>
     {
         private readonly CarRentalContext _context;
 
@@ -25,24 +29,40 @@ namespace autorentimineProjekt.ToDoApi.Application.Cars.Queries
             _context = context;
         }
 
-        public async Task<Result<List<Car>>> Handle(GetCarsQuery request, CancellationToken cancellationToken)
+        public async Task<Result<PagedResult<Car>>> Handle(GetCarsQuery request, CancellationToken cancellationToken)
         {
-            // Начинаем строить запрос к базе данных
             var query = _context.Cars.AsQueryable();
 
-            // 2. Если пользователь передал строку поиска, фильтруем данные (Пункт 3 из задания)
             if (!string.IsNullOrWhiteSpace(request.Search))
             {
                 var searchLower = request.Search.ToLower().Trim();
-
-                // Ищем совпадения по марке или модели (без учета регистра)
                 query = query.Where(c => c.Mark.ToLower().Contains(searchLower) ||
                                          c.Model.ToLower().Contains(searchLower));
             }
 
-            var cars = await query.ToListAsync(cancellationToken);
+            // 1. Считаем общее количество записей в базе данных (RowCount)
+            var totalRows = await query.CountAsync(cancellationToken);
 
-            return Result<List<Car>>.Success(cars);
+            // 2. Вычисляем количество страниц (PageCount)
+            var pageCount = (int)Math.Ceiling((double)totalRows / request.PageSize);
+
+            // 3. Пропускаем предыдущие страницы и берем порцию данных для текущей страницы
+            var items = await query
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync(cancellationToken);
+
+            // 4. Формируем итоговый объект PagedResult
+            var pagedResult = new PagedResult<Car>
+            {
+                CurrentPage = request.Page,
+                PageSize = request.PageSize,
+                RowCount = totalRows,
+                PageCount = pageCount,
+                Results = items
+            };
+
+            return Result<PagedResult<Car>>.Success(pagedResult);
         }
     }
 }

@@ -22,6 +22,7 @@ builder.Services.AddMediatR(cfg =>
 
 // Автоматически регистрируем все валидаторы FluentValidation
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+builder.Services.AddScoped<ICarRepository, CarRepository>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
