@@ -48,6 +48,11 @@ namespace autorentimineProjekt.ToDoApi.Application.Cars.Commands
                 result.AddError("Request ID cannot be negative");
                 return result;
             }
+            if (request.DailyRate < 0.01m || request.DailyRate > 5000.00m)
+            {
+                result.AddError("Daily rate must be between 0.01 and 5000.00");
+                return result;
+            }
 
             var car = new Car();
             if (request.Id == 0)
@@ -68,7 +73,13 @@ namespace autorentimineProjekt.ToDoApi.Application.Cars.Commands
 
             car.Mark = request.Mark;
             car.Model = request.Model;
-            car.RegistrationNumber = request.RegistrationNumber;
+
+            // Проверяем: если пришел госномер — обновляем. Если пришел null или пустота — оставляем старое значение
+            if (!string.IsNullOrWhiteSpace(request.RegistrationNumber))
+            {
+                car.RegistrationNumber = request.RegistrationNumber;
+            }
+
             car.Status = request.Status;
             car.DailyRate = request.DailyRate;
 

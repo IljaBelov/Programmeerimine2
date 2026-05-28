@@ -1,0 +1,63 @@
+<div class="container mt-4">
+  <h1>🚗 Список автомобилей</h1>
+
+  <button class="btn btn-success mb-3" (click)="newCar()">+ Добавить автомобиль</button>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+  <div *ngIf="showForm" class="card p-3 mb-3">
+    <h5>{{ formCar.id === 0 ? 'Добавить' : 'Редактировать' }}</h5>
+    <div class="row g-2">
+      <div class="col-md-2">
+        <input type="text" class="form-control" placeholder="Марка" [(ngModel)]="formCar.mark" />
+      </div>
+      <div class="col-md-2">
+        <input type="text" class="form-control" placeholder="Модель" [(ngModel)]="formCar.model" />
+      </div>
+      <div class="col-md-2">
+        <input type="text" class="form-control" placeholder="Номер" [(ngModel)]="formCar.registrationNumber" />
+      </div>
+      <div class="col-md-2">
+        <input type="number" class="form-control" placeholder="Цена в день" [(ngModel)]="formCar.dailyRate" />
+      </div>
+      <div class="col-md-2">
+        <select class="form-control" [(ngModel)]="formCar.status">
+          <option value="free">Свободна</option>
+          <option value="rented">В аренде</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex gap-1">
+        <button class="btn btn-primary" (click)="saveCar()">Сохранить</button>
+        <button class="btn btn-secondary" (click)="cancel()">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <table class="table table-striped table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th>Id</th>
+        <th>Марка</th>
+        <th>Модель</th>
+        <th>Рег. номер</th>
+        <th>Цена/день</th>
+        <th>Статус</th>
+        <th>Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let car of cars">
+        <td>{{ car.id }}</td>
+        <td>{{ car.mark }}</td>
+        <td>{{ car.model }}</td>
+        <td>{{ car.registrationNumber }}</td>
+        <td>{{ car.dailyRate }} €</td>
+        <td>{{ car.status === 'free' ? 'Свободна' : 'В аренде' }}</td>
+        <td>
+          <button class="btn btn-sm btn-warning me-1" (click)="editCar(car)">Изменить</button>
+          <button class="btn btn-sm btn-danger" (click)="deleteCar(car.id)">Удалить</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

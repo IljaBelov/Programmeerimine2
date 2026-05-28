@@ -1,0 +1,108 @@
+﻿@page "/cars"
+@using AutoRentimine.BlazorWasm.DTOs
+@inject IApiClient apiClient
+@inject NavigationManager NavManager
+
+<PageTitle>Управление автопарком</PageTitle>
+
+<div class="container mt-4">
+    <h1>🚗 Список автомобилей</h1>
+    <p class="text-muted">Управление машинами через Blazor WebAssembly</p>
+
+    <a href="/cars/create" class="btn btn-success mb-3">+ Добавить автомобиль</a>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+
+    @if (cars == null)
+    {
+        <p><em>Загрузка данных с сервера...</em></p>
+    }
+    else if (!cars.Any())
+    {
+        <p>В базе данных пока нет автомобилей.</p>
+    }
+    else
+    {
+        <table class="table table-striped table-hover mt-3">
+            <thead class="table-dark">
+                <tr>
+                    <th>Id</th>
+                    <th>Марка</th>
+                    <th>Модель</th>
+                    <th>Рег. Номер</th>
+                    <th>Цена/день</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var car in cars)
+                {
+                    <tr>
+                        <td>@car.Id</td>
+                        <td>@car.Mark</td>
+                        <td>@car.Model</td>
+                        <td><span class="badge bg-secondary">@car.RegistrationNumber</span></td>
+                        <td>@car.DailyRate €</td>
+                        <td>
+                            <span class="badge @(car.Status == "free" ? "bg-success" : "bg-warning text-dark")">
+                                @(car.Status == "free" ? "Свободна" : "В аренде")
+                            </span>
+                        </td>
+                        <td>
+                            <a href="@($"/cars/edit/{car.Id}")" class="btn btn-sm btn-warning me-1">Изменить</a>
+                            <button class="btn btn-sm btn-danger" @onclick="() => DeleteCar(car.Id)">Удалить</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+    private List<CarDto>? cars;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCars();
+    }
+
+    private async Task LoadCars()
+    {
+        errorMessage = null;
+        try
+        {
+            var result = await apiClient.GetCarsAsync();
+            if (!result.HasErrors)
+            {
+                cars = result.Value;
+            }
+            else
+            {
+                errorMessage = string.Join(", ", result.Errors);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteCar(int id)
+    {
+        var result = await apiClient.DeleteCarAsync(id);
+        if (!result.HasErrors)
+        {
+            await LoadCars();
+        }
+        else
+        {
+            errorMessage = string.Join(", ", result.Errors);
+        }
+    }
+}

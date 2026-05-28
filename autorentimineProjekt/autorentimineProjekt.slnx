@@ -1,5 +1,15 @@
 <Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="AutoRentimine.BlazorWasm/AutoRentimine.BlazorWasm.csproj" Id="a5c7e58e-04b4-4cf9-a36a-a67c8c7d2307" />
+  <Project Path="AutoRentimine.WindowsForms/AutoRentimine.WindowsForms.csproj" Id="530e333f-4992-4fb4-a959-1b63005132e6" />
+  <Project Path="AutoRentimine.WpfApplication.UnitTests/AutoRentimine.WpfApplication.UnitTests.csproj" Id="3aff0f2d-0967-4140-b800-df6a8f6f4e7e" />
+  <Project Path="AutoRentimine.WpfApplication/AutoRentimine.WpfApplication.csproj" Id="9e95105c-9342-45b0-aecb-09723b15d89d" />
   <Project Path="KooliProjekt.IntegrationTests/KooliProjekt.IntegrationTests.csproj" />
+  <Project Path="KooliProjekt.WindowsForms.UnitTests/AutoRentimine.WindowsForms.UnitTests.csproj" />
   <Project Path="ToDoApi/ToDoApi.csproj" />
   <Project Path="UnitTests/UnitTests.csproj" />
 </Solution>

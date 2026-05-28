@@ -1,0 +1,129 @@
+﻿@page "/cars/create"
+@page "/cars/edit/{Id:int}"
+@using AutoRentimine.BlazorWasm.DTOs
+@using Microsoft.AspNetCore.Components.Forms
+@inject IApiClient apiClient
+@inject NavigationManager NavManager
+
+<PageTitle>@title</PageTitle>
+
+<div class="container mt-4">
+    <h3>@title</h3>
+
+    <EditForm EditContext="editContext" OnSubmit="@FormSubmitted">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <p class="text-danger">@error</p>
+
+        <div class="form-group row mb-2">
+            <label class="col-sm-2 col-form-label">ID</label>
+            <div class="col-sm-10">
+                @car.Id
+            </div>
+        </div>
+
+        <div class="form-group row mb-2">
+            <label class="col-sm-2 col-form-label">Марка</label>
+            <div class="col-sm-10">
+                <InputText class="form-control" @bind-Value="car.Mark" />
+                <ValidationMessage For="@(() => car.Mark)" />
+            </div>
+        </div>
+
+        <div class="form-group row mb-2">
+            <label class="col-sm-2 col-form-label">Модель</label>
+            <div class="col-sm-10">
+                <InputText class="form-control" @bind-Value="car.Model" />
+                <ValidationMessage For="@(() => car.Model)" />
+            </div>
+        </div>
+
+        <div class="form-group row mb-2">
+            <label class="col-sm-2 col-form-label">Рег. номер</label>
+            <div class="col-sm-10">
+                <InputText class="form-control" @bind-Value="car.RegistrationNumber" />
+                <ValidationMessage For="@(() => car.RegistrationNumber)" />
+            </div>
+        </div>
+
+        <div class="form-group row mb-2">
+            <label class="col-sm-2 col-form-label">Цена в день</label>
+            <div class="col-sm-10">
+                <InputNumber class="form-control" @bind-Value="car.DailyRate" />
+                <ValidationMessage For="@(() => car.DailyRate)" />
+            </div>
+        </div>
+
+        <div class="form-group row mb-2">
+            <label class="col-sm-2 col-form-label">Статус</label>
+            <div class="col-sm-10">
+                <InputSelect class="form-control" @bind-Value="car.Status">
+                    <option value="free">Свободна</option>
+                    <option value="rented">В аренде</option>
+                </InputSelect>
+                <ValidationMessage For="@(() => car.Status)" />
+            </div>
+        </div>
+
+        <div class="form-group row mb-2">
+            <div class="col-sm-10 offset-sm-2">
+                <button type="submit" class="btn btn-primary me-2">Сохранить</button>
+                <a href="/cars" class="btn btn-secondary">Отмена</a>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private string error = "";
+    private string title = "Редактировать автомобиль";
+    private EditContext? editContext;
+    private CarDto car = new CarDto();
+    private ValidationMessageStore? messageStore;
+
+    protected override async Task OnInitializedAsync()
+    {
+        editContext = new EditContext(car);
+        messageStore = new ValidationMessageStore(editContext);
+
+        if (Id == 0)
+        {
+            title = "Добавить автомобиль";
+            return;
+        }
+
+        var response = await apiClient.GetCarsAsync();
+        if (!response.HasErrors)
+        {
+            var found = response.Value?.FirstOrDefault(c => c.Id == Id);
+            if (found != null)
+            {
+                car = found;
+                editContext = new EditContext(car);
+                messageStore = new ValidationMessageStore(editContext);
+            }
+        }
+    }
+
+    private async Task FormSubmitted()
+    {
+        messageStore?.Clear();
+
+        var result = await apiClient.SaveCarAsync(car);
+        if (!result.HasErrors)
+        {
+            NavManager.NavigateTo("/cars");
+            return;
+        }
+
+        foreach (var err in result.Errors)
+        {
+            messageStore?.Add(new FieldIdentifier(car, string.Empty), err);
+        }
+
+        editContext?.NotifyValidationStateChanged();
+    }
+}

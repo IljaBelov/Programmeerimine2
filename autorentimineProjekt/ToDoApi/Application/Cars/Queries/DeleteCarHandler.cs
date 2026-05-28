@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace autorentimineProjekt.ToDoApi.Application.Cars.Commands
 {
-    public class DeleteCarCommand : IRequest<Result<bool>>, ITransactional
+    public class DeleteCarCommand : IRequest<Result<bool>>
     {
         public int Id { get; set; }
     }

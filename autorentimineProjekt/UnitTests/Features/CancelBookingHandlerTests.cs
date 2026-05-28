@@ -31,7 +31,8 @@ namespace autorentimineProjekt.UnitTests.Features
             var command = new CancelBookingCommand { CarId = 1, Kilometers = 100 };
 
             // Act
-            var result = await handler.Handle(command);
+            // ИСПРАВЛЕНО: Добавили CancellationToken.None вторым аргументом
+            var result = await handler.Handle(command, CancellationToken.None);
 
             // Assert
             var updatedCar = await DbContext.Cars.FindAsync(1);

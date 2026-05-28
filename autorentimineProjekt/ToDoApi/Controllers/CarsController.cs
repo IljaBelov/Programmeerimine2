@@ -53,20 +53,47 @@ namespace autorentimineProjekt.ToDoApi.Controllers
             return Ok(result.Value);
         }
 
-        // 3. Сохранение / Создание машины (Объединяем под требования тестов препода)
-        // Добавляем [HttpPost] и [HttpPut] одновременно, чтобы застраховаться от любых капризов тестов
+        // ==========================================
+        // 3. СОХРАНЕНИЕ / СОЗДАНИЕ / ОБНОВЛЕНИЕ МАШИНЫ
+        // ==========================================
+
+        // 3.1 Создание новой машины (Для POST запросов на адрес: api/cars)
         [HttpPost]
+        public async Task<IActionResult> CreateCar([FromBody] SaveCarCommand command)
+        {
+            return await ExecuteSave(command);
+        }
+
+        // 3.2 Обновление машины (Для PUT запросов без ID в адресе: api/cars)
         [HttpPut]
-        public async Task<IActionResult> SaveCar([FromBody] SaveCarCommand command)
+        public async Task<IActionResult> UpdateCar([FromBody] SaveCarCommand command)
+        {
+            return await ExecuteSave(command);
+        }
+
+        // 3.3 Обновление машины с ID в URL (Для PUT запросов от WinForms: api/cars/{id})
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateCarWithId(int id, [FromBody] SaveCarCommand command)
+        {
+            if (command != null)
+            {
+                command.Id = id; // Жестко синхронизируем ID из адреса URL с нашей командой
+            }
+            return await ExecuteSave(command);
+        }
+
+        // Вспомогательный приватный метод, чтобы не дублировать код валидации и отправки
+        private async Task<IActionResult> ExecuteSave(SaveCarCommand command)
         {
             var result = await _mediator.Send(command);
 
             if (result == null || result.HasErrors)
             {
-                return BadRequest(result);
+                string errorMessage = result != null ? string.Join(" | ", result.Errors) : "Неизвестная ошибка";
+                return BadRequest(errorMessage);
             }
 
-            // Возвращаем command.Id (число int), так как тест ожидает именно его
+            // Возвращаем ID (число int), так как тесты ожидают именно его
             return Ok(command.Id);
         }
 

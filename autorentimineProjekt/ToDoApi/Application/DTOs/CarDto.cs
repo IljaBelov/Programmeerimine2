@@ -7,5 +7,6 @@ namespace autorentimineProjekt.ToDoApi.Application.DTOs
         public string Model { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public decimal DailyRate { get; set; }
+        public string RegistrationNumber { get; set; } = string.Empty;
     }
 }

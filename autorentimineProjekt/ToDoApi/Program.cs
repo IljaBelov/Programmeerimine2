@@ -10,17 +10,20 @@ using autorentimineProjekt.ToDoApi.Application.Behaviors;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// РЕГИСТРАЦИЯ MEDIATR ЧЕРЕЗ PROGRAM (теперь он точно найдет все хендлеры в проекте)
+// 1. НАСТРОЙКА CORS (Разрешаем Blazor с любого порта)
+// 1. НАСТРОЙКА CORS — Теперь с правильным портом Blazor
+builder.Services.AddCors();
+
+// 2. РЕГИСТРАЦИЯ MEDIATR
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
-
-    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ErrorHandlingBehavior<,>));
-    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(TransactionalBehavior<,>));
+    cfg.AddOpenBehavior(typeof(ErrorHandlingBehavior<,>));
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+    cfg.AddOpenBehavior(typeof(TransactionalBehavior<,>));
 });
 
-// Автоматически регистрируем все валидаторы FluentValidation
+// 3. РЕГИСТРАЦИЯ ВАЛИДАТОРОВ И РЕПОЗИТОРИЕВ (Без дубликатов)
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 builder.Services.AddScoped<ICarRepository, CarRepository>();
 
@@ -28,22 +31,27 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Настройка базы (в памяти для тестов)
+// 4. НАСТРОЙКА БАЗЫ ДАННЫХ (In-Memory)
 builder.Services.AddDbContext<CarRentalContext>(opt => opt.UseInMemoryDatabase("CarRental"));
-
-// Регистрация репозиториев
-builder.Services.AddScoped<ICarRepository, CarRepository>();
 
 var app = builder.Build();
 
+// 5. ПОДКЛЮЧЕНИЕ SWAGGER В DEVELOPMENT-РЕЖИМЕ
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseRouting();
+// 6. ВКЛЮЧЕНИЕ CORS (Строго перед MapControllers!)
+app.UseCors(options => options
+    .AllowAnyOrigin()
+    .AllowAnyHeader()
+    .AllowAnyMethod());
 
 app.MapControllers();
 
+// 7. ИНИЦИАЛИЗАЦИЯ ДЕМО-ДАННЫХ В БАЗУ
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<CarRentalContext>();
@@ -58,4 +66,5 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
-public partial class Program { }    
+
+public partial class Program { }
