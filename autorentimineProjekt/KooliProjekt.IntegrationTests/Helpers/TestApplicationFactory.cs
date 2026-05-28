@@ -3,25 +3,33 @@ using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace KooliProjekt.IntegrationTests.Helpers
 {
     // Убираем <TStartup> вообще. Наследуемся напрямую от WebApplicationFactory<FakeStartup>
-    public class TestApplicationFactory : WebApplicationFactory<FakeStartup>
+    public class TestApplicationFactory<TTestStartup> : WebApplicationFactory<TTestStartup> where TTestStartup : class
     {
-        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        protected override IHostBuilder CreateHostBuilder()
         {
-            // Твой точный путь до папки, где лежит ToDoApi.csproj
-            string apiPath = @"C:\Users\IT\MvcProjects\Programmeerimine2\autorentimineProjekt\ToDoApi";
+            var host = Host.CreateDefaultBuilder()
+                            .ConfigureWebHost(builder =>
+                            {
+                                builder.UseContentRoot(".");
+                                builder.ConfigureAppConfiguration((c, b) =>
+                                {
+                                    c.HostingEnvironment.ApplicationName = "ToDoApi";
+                                });
+                                builder.UseStartup<TTestStartup>();
+                            })
+                            .ConfigureAppConfiguration((context, conf) =>
+                            {
+                                var projectDir = Directory.GetCurrentDirectory();
+                                var configPath = Path.Combine(projectDir, "appsettings.json");
 
-            builder.UseContentRoot(apiPath);
-
-            builder.ConfigureAppConfiguration((context, conf) =>
-            {
-                conf.AddJsonFile(Path.Combine(apiPath, "appsettings.json"), optional: true);
-            });
-
-            base.ConfigureWebHost(builder);
+                                conf.AddJsonFile(configPath);
+                            });
+            return host;
         }
     }
 }

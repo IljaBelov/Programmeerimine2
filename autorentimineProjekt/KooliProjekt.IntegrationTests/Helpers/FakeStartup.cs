@@ -1,8 +1,9 @@
 ﻿using System;
-using FluentValidation;
 using autorentimineProjekt.ToDoApi.Application.Behaviors;
-using autorentimineProjekt.ToDoApi.Data;
 using autorentimineProjekt.ToDoApi.Controllers;
+using autorentimineProjekt.ToDoApi.Data;
+using autorentimineProjekt.ToDoApi.Data.Repositories;
+using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -40,6 +41,8 @@ namespace KooliProjekt.IntegrationTests.Helpers
                 config.AddOpenBehavior(typeof(ValidationBehavior<,>));
                 config.AddOpenBehavior(typeof(TransactionalBehavior<,>));
             });
+
+            services.AddScoped<ICarRepository, CarRepository>();
 
             services.AddControllersWithViews()
                     .AddApplicationPart(typeof(CarsController).Assembly);

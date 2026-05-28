@@ -46,6 +46,7 @@ namespace KooliProjekt.IntegrationTests
             // Теперь транзакции не падают, сервер вернет 200 OK!
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
+            var body = await response.Content.ReadAsStringAsync();
             var createdCarId = await response.Content.ReadFromJsonAsync<int>();
             Assert.True(createdCarId > 0);
         }
