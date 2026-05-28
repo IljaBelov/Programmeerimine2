@@ -16,6 +16,7 @@ export interface CarDto {
 })
 export class CarService {
   private apiUrl = 'http://localhost:55005/api/cars';
+ private bookingsUrl = 'http://localhost:55005/api/bookings';
 
   constructor(private http: HttpClient) {}
 
@@ -33,5 +34,12 @@ export class CarService {
     } else {
       return this.http.put(`${this.apiUrl}/${car.id}`, car);
     }
+  }
+  createBooking(carId: number): Observable<number> {
+    return this.http.post<number>(this.bookingsUrl, { carId });
+  }
+
+  cancelBooking(carId: number, kilometers: number): Observable<number> {
+    return this.http.post<number>(`${this.bookingsUrl}/cancel`, { carId, kilometers });
   }
 }

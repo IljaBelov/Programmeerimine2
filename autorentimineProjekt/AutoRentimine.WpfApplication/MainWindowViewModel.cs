@@ -36,12 +36,14 @@ namespace AutoRentimine.WpfApplication
             AddCommand = new RelayCommand<object>(async _ => await AddCarAsync());
             SaveCommand = new RelayCommand<object>(_ => ClearForm(), _ => SelectedItem != null);
             DeleteCommand = new RelayCommand<object>(async _ => await DeleteCarAsync(), _ => SelectedItem != null);
+            OpenRentalCommand = new RelayCommand<object>(_ => OpenRental());
         }
 
         public ICommand LoadCommand { get; }
         public ICommand AddCommand { get; }
         public ICommand SaveCommand { get; }
         public ICommand DeleteCommand { get; }
+        public ICommand OpenRentalCommand { get; }
 
         public ObservableCollection<CarModel> Data { get => _data; set => SetProperty(ref _data, value); }
 
@@ -220,6 +222,11 @@ namespace AutoRentimine.WpfApplication
             {
                 _dialogProvider.ShowError(string.Join(Environment.NewLine, result.Errors));
             }
+        }
+        private void OpenRental()
+        {
+            var rentalWindow = new RentalWindow(_apiClient);
+            rentalWindow.Show();
         }
 
         private void ClearForm()

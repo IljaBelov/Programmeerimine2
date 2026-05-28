@@ -1,0 +1,170 @@
+﻿@page "/rental"
+@using AutoRentimine.BlazorWasm.DTOs
+@inject IApiClient apiClient
+@implements IDisposable
+
+<PageTitle>Аренда автомобиля</PageTitle>
+
+<div class="container mt-4">
+
+    @if (screen == "selection")
+    {
+        <h3>Выбор автомобиля</h3>
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+        @if (availableCars == null)
+        {
+            <p><em>Загрузка...</em></p>
+        }
+        else if (!availableCars.Any())
+        {
+            <p>Нет свободных автомобилей.</p>
+        }
+        else
+        {
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Марка</th>
+                        <th>Модель</th>
+                        <th>Номер</th>
+                        <th>Цена/день</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var car in availableCars)
+                    {
+                        <tr class="@(selectedCar?.Id == car.Id ? "table-success" : "")" @onclick="() => selectedCar = car" style="cursor:pointer">
+                            <td>@car.Mark</td>
+                            <td>@car.Model</td>
+                            <td>@car.RegistrationNumber</td>
+                            <td>@car.DailyRate €</td>
+                            <td>
+                                <button class="btn btn-sm btn-success" @onclick="() => StartRental(car)">Арендовать</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+
+    @if (screen == "active")
+    {
+        <h3>Активная поездка 🚗💨</h3>
+        <div class="card p-4 mt-3">
+            <h5>@carInfo</h5>
+            <p class="mt-3 fs-5">Время в пути: <strong>@timeText</strong></p>
+            <p class="fs-5">Пройдено: <strong>@kmText</strong></p>
+            <button class="btn btn-danger mt-3" @onclick="EndRental">Завершить поездку</button>
+        </div>
+    }
+
+    @if (screen == "result")
+    {
+        <h3>Поездка завершена!</h3>
+        <div class="card p-4 mt-3">
+            <h4 class="text-success">К оплате: <strong>@finalPrice</strong></h4>
+            <p class="mt-3" style="white-space: pre-line">@receiptDetails</p>
+            <button class="btn btn-primary mt-3" @onclick="BackToMenu">Вернуться к списку</button>
+        </div>
+    }
+
+</div>
+
+@code {
+    private string screen = "selection";
+    private List<CarDto>? availableCars;
+    private CarDto? selectedCar;
+    private string errorMessage = "";
+    private string carInfo = "";
+    private string timeText = "00:00:00";
+    private string kmText = "0.00 км";
+    private string finalPrice = "";
+    private string receiptDetails = "";
+
+    private DateTime startTime;
+    private double kilometersTraveled = 0;
+    private System.Threading.Timer? timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAvailableCars();
+    }
+
+    private async Task LoadAvailableCars()
+    {
+        errorMessage = "";
+        var result = await apiClient.GetCarsAsync();
+        if (!result.HasErrors)
+        {
+            availableCars = result.Value?.Where(c => c.Status?.Trim().ToLower() == "free").ToList();
+        }
+        else
+        {
+            errorMessage = string.Join(", ", result.Errors);
+        }
+    }
+
+    private async Task StartRental(CarDto car)
+    {
+        var result = await apiClient.CreateBookingAsync(car.Id);
+        if (!result.HasErrors)
+        {
+            selectedCar = car;
+            startTime = DateTime.Now;
+            kilometersTraveled = 0;
+            carInfo = $"Вы арендовали: {car.Mark} {car.Model} [{car.RegistrationNumber}]";
+            screen = "active";
+
+            timer = new System.Threading.Timer(_ =>
+            {
+                TimeSpan elapsed = DateTime.Now - startTime;
+                kilometersTraveled += (50.0 / 3600.0);
+                timeText = elapsed.ToString(@"hh\:mm\:ss");
+                kmText = $"{kilometersTraveled:F2} км";
+                InvokeAsync(StateHasChanged);
+            }, null, 0, 1000);
+        }
+        else
+        {
+            errorMessage = string.Join(", ", result.Errors);
+        }
+    }
+
+    private async Task EndRental()
+    {
+        timer?.Dispose();
+        timer = null;
+
+        var result = await apiClient.CancelBookingAsync(selectedCar!.Id, kilometersTraveled);
+        if (!result.HasErrors)
+        {
+            finalPrice = $"{result.Value:F2} EUR";
+            receiptDetails = $"Автомобиль: {selectedCar.Mark} {selectedCar.Model}\n" +
+                             $"Пройдено: {kilometersTraveled:F2} км\n" +
+                             $"Время: {(DateTime.Now - startTime):hh\\:mm\\:ss}";
+            screen = "result";
+        }
+        else
+        {
+            errorMessage = string.Join(", ", result.Errors);
+            screen = "selection";
+        }
+    }
+
+    private async Task BackToMenu()
+    {
+        screen = "selection";
+        selectedCar = null;
+        await LoadAvailableCars();
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+    }
+}

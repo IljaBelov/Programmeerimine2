@@ -4,6 +4,26 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="AutoRentimine.Angular/" Type="Website" DisplayName="AutoRentimine.Angular">
+    <BuildType Project="Debug" />
+    <Properties Name="WebsiteProperties">
+      <Property Name="Debug.AspNetCompiler.Debug" Value="&quot;True&quot;" />
+      <Property Name="Debug.AspNetCompiler.FixedNames" Value="&quot;false&quot;" />
+      <Property Name="Debug.AspNetCompiler.ForceOverwrite" Value="&quot;true&quot;" />
+      <Property Name="Debug.AspNetCompiler.PhysicalPath" Value="&quot;AutoRentimine.Angular\&quot;" />
+      <Property Name="Debug.AspNetCompiler.TargetPath" Value="&quot;PrecompiledWeb\localhost_52223\&quot;" />
+      <Property Name="Debug.AspNetCompiler.Updateable" Value="&quot;true&quot;" />
+      <Property Name="Debug.AspNetCompiler.VirtualPath" Value="&quot;/localhost_52223&quot;" />
+      <Property Name="Release.AspNetCompiler.Debug" Value="&quot;False&quot;" />
+      <Property Name="Release.AspNetCompiler.FixedNames" Value="&quot;false&quot;" />
+      <Property Name="Release.AspNetCompiler.ForceOverwrite" Value="&quot;true&quot;" />
+      <Property Name="Release.AspNetCompiler.PhysicalPath" Value="&quot;AutoRentimine.Angular\&quot;" />
+      <Property Name="Release.AspNetCompiler.TargetPath" Value="&quot;PrecompiledWeb\localhost_52223\&quot;" />
+      <Property Name="Release.AspNetCompiler.Updateable" Value="&quot;true&quot;" />
+      <Property Name="Release.AspNetCompiler.VirtualPath" Value="&quot;/localhost_52223&quot;" />
+      <Property Name="VWDPort" Value="&quot;52223&quot;" />
+    </Properties>
+  </Project>
   <Project Path="AutoRentimine.BlazorWasm/AutoRentimine.BlazorWasm.csproj" Id="a5c7e58e-04b4-4cf9-a36a-a67c8c7d2307" />
   <Project Path="AutoRentimine.WindowsForms/AutoRentimine.WindowsForms.csproj" Id="530e333f-4992-4fb4-a959-1b63005132e6" />
   <Project Path="AutoRentimine.WpfApplication.UnitTests/AutoRentimine.WpfApplication.UnitTests.csproj" Id="3aff0f2d-0967-4140-b800-df6a8f6f4e7e" />

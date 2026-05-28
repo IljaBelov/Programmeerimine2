@@ -36,7 +36,8 @@
             <TextBox Text="{Binding Status, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
 
             <UniformGrid Columns="2" Rows="2">
-                <Button Content="Загрузить" IsEnabled="False"/>
+                <Button Content="🚗 Аренда" Command="{Binding OpenRentalCommand}" 
+        Width="100" Height="30" Margin="5,0,0,0" Background="LightGreen"/>
                 <Button Content="Добавить" Command="{Binding AddCommand}"/>
                 <Button Content="Сохранить (Очистить)" Command="{Binding SaveCommand}"/>
                 <Button Content="Удалить" Command="{Binding DeleteCommand}"/>

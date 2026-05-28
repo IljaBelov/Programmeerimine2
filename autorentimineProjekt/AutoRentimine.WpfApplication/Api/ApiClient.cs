@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
-
 using System.Threading.Tasks;
-using autorentimineProjekt.ToDoApi.Application.DTOs; // Твои DTOшки
+using autorentimineProjekt.ToDoApi.Application.DTOs;
 
-namespace AutoRentimine.WpfApplication.Api // <-- Строго под твой WPF проект!
+namespace AutoRentimine.WpfApplication.Api
 {
     public interface IApiClient
     {
@@ -21,7 +20,8 @@ namespace AutoRentimine.WpfApplication.Api // <-- Строго под твой W
     public class ApiClient : IApiClient
     {
         private readonly HttpClient _client;
-        private const string BaseUrl = "https://localhost:55004/api/cars";
+        private const string BaseUrl = "http://localhost:55005/api/cars";
+        private const string BookingsUrl = "http://localhost:55005/api/bookings";
 
         public ApiClient()
         {
@@ -113,7 +113,7 @@ namespace AutoRentimine.WpfApplication.Api // <-- Строго под твой W
             var result = new OperationResult<int>();
             try
             {
-                var response = await _client.PostAsJsonAsync($"https://localhost:55004/api/bookings/create/{carId}", new { });
+                var response = await _client.PostAsJsonAsync(BookingsUrl, new { CarId = carId });
                 if (response.IsSuccessStatusCode)
                 {
                     result.Data = await response.Content.ReadFromJsonAsync<int>();
@@ -137,7 +137,7 @@ namespace AutoRentimine.WpfApplication.Api // <-- Строго под твой W
             try
             {
                 var payload = new { CarId = carId, Kilometers = kilometers };
-                var response = await _client.PostAsJsonAsync("https://localhost:55004/api/bookings/cancel", payload);
+                var response = await _client.PostAsJsonAsync($"{BookingsUrl}/cancel", payload);
                 if (response.IsSuccessStatusCode)
                 {
                     result.Data = await response.Content.ReadFromJsonAsync<decimal>();
